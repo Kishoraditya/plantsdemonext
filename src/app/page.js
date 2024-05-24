@@ -1,13 +1,136 @@
+'use client'
 import Image from "next/image";
-
+import { useState } from 'react'
+import { supabase } from '../../lib/supabase'
 export default function Home() {
+
+  const [formData, setFormData] = useState({
+    plantName: '',
+    description: '',
+    image: null,
+    location: '',
+    pincode: '',
+    email: '',
+  })
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleImageChange = (e) => {
+    setFormData({ ...formData, image: e.target.files[0] })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    try {
+      // Validate the form data
+      if (!formData.plantName || !formData.description || !formData.location || !formData.pincode || !formData.email) {
+        alert('Please fill in all the required fields.')
+        return
+      }
+
+      if (formData.pincode.length !== 6) {
+        alert('Please enter a valid 6-digit pincode.')
+        return
+      }
+
+      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(formData.email)) {
+        alert('Please enter a valid email address.')
+        return
+      }
+
+      // Insert the form data into Supabase
+      await supabase.from('plant_requests').insert(formData)
+      alert('Request submitted successfully!')
+      setFormData({
+        plantName: '',
+        description: '',
+        image: null,
+        location: '',
+        pincode: '',
+        email: '',
+      })
+    } catch (error) {
+      console.error('Error submitting request:', error)
+      alert('Error submitting request. Please try again.')
+    }
+  }
+
   return (
+    <div>
+      
+      
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
+      <h1>Plant Sharing and Requests</h1>
+      <p>Share or request different plants with others in your community.</p>
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Get started by editing&nbsp;
           <code className="font-mono font-bold">src/app/page.js</code>
         </p>
+        
+      <form onSubmit={handleSubmit}>
+        <label>
+          Plant Name:
+          <input
+            type="text"
+            name="plantName"
+            value={formData.plantName}
+            onChange={handleInputChange}
+            required
+          />
+        </label>
+        <label>
+          Description:
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            required
+          ></textarea>
+        </label>
+        <label>
+          Image:
+          <input
+            type="file"
+            name="image"
+            onChange={handleImageChange}
+          />
+        </label>
+        <label>
+          Location:
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            required
+          />
+        </label>
+        <label>
+          Pincode:
+          <input
+            type="text"
+            name="pincode"
+            value={formData.pincode}
+            onChange={handleInputChange}
+            required
+          />
+        </label>
+        <label>
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+          />
+        </label>
+        <button type="submit">Submit</button>
+      </form>
         <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
           <a
             className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
@@ -109,5 +232,12 @@ export default function Home() {
         </a>
       </div>
     </main>
-  );
+      
+    </div>
+  )
 }
+
+
+
+
+
